@@ -1,0 +1,170 @@
+Sub StockMarketData()
+Dim ws As Worksheet
+    ' Variable declarations.
+    
+    Dim OpenPrice As Double
+    Dim SameRow As Integer
+    Dim StockVolume As LongLong
+    Dim lastrow As Long
+    Dim GreatestPercent As Double
+    Dim LeastPercent As Double
+    Dim GreatestVolume As LongLong
+    
+    ' Variable initializations.
+ 
+ For Each ws In Worksheets
+ 
+    OpenPrice = Cells(2, 3).Value
+    
+    
+    SameRow = 2
+    
+    
+    StockVolume = 0
+    
+    
+    lastrow = Cells(Rows.Count, 1).End(xlUp).Row
+    
+    
+    GreatestPercent = 0
+    
+    
+    LeastPercent = 0
+    
+    
+    GreatestVolume = 0
+
+    
+    ' New columns and cells created and labeled. Also adjusts column widths.
+    ws.Range("I1").Value = "Ticker"
+    ws.Range("J1").Value = "Yearly Change"
+    ws.Range("K1").Value = "Percent Change"
+    ws.Range("L1").Value = "Stock Volume"
+    ws.Range("O2").Value = "Greatest % Increase"
+    ws.Range("O3").Value = "Greatest % Decrease"
+    ws.Range("O4").Value = "Greatest Total Volume"
+    ws.Range("P1").Value = "Ticker"
+    ws.Range("Q1").Value = "Value"
+    ws.Columns("I:L").AutoFit
+    ws.Columns("O:Q").AutoFit
+    
+    ' Lists ticker symbols for each stock.
+
+    For i = 2 To lastrow
+        If ws.Cells(i + 1, 1).Value <> ws.Cells(i, 1).Value Then
+            ws.Cells(SameRow, 9).Value = ws.Cells(i, 1).Value
+            SameRow = SameRow + 1
+        End If
+    Next i
+    
+    ' Lists yearly change for each stock.
+    
+    SameRow = 2
+    OpenPrice = ws.Cells(2, 3).Value
+    For i = 2 To lastrow
+        If ws.Cells(i + 1, 1).Value <> ws.Cells(i, 1).Value Then
+            ws.Cells(SameRow, 10).Value = ws.Cells(i, 6).Value - OpenPrice
+            OpenPrice = ws.Cells(i + 1, 3).Value
+            SameRow = SameRow + 1
+        End If
+    Next i
+    
+    ' Lists percent change for each stock.
+    
+    SameRow = 2
+    OpenPrice = ws.Cells(2, 3).Value
+    For i = 2 To lastrow
+        If ws.Cells(i + 1, 1).Value <> ws.Cells(i, 1).Value Then
+            If OpenPrice <> 0 Then
+                ws.Cells(SameRow, 11).Value = (ws.Cells(i, 6).Value - OpenPrice) / OpenPrice
+            Else
+                ws.Cells(SameRow, 11).Value = 0
+            End If
+            SameRow = SameRow + 1
+            OpenPrice = ws.Cells(i + 1, 3).Value
+        End If
+    Next i
+    
+    ' Lists total stock volume for each stock.
+    
+    SameRow = 2
+    StockVolume = 0
+    For i = 2 To lastrow
+        If ws.Cells(i + 1, 1).Value <> ws.Cells(i, 1).Value Then
+            StockVolume = StockVolume + ws.Cells(i, 7).Value
+            ws.Cells(SameRow, 12).Value = StockVolume
+            SameRow = SameRow + 1
+            StockVolume = 0
+        Else
+            StockVolume = StockVolume + ws.Cells(i, 7).Value
+            ws.Cells(SameRow, 12).Value = StockVolume
+        End If
+    Next i
+    
+    ' Fills percent change cells according to whether the percent change is positive or negative. New variables declared.
+    
+    Dim lastrow2 As Long
+    lastrow2 = ws.Cells(Rows.Count, 9).End(xlUp).Row
+    
+    For i = 2 To lastrow2
+        If ws.Cells(i, 10).Value >= 0 Then
+            ws.Cells(i, 10).Interior.ColorIndex = 4
+        Else
+            ws.Cells(i, 10).Interior.ColorIndex = 3
+        End If
+    Next i
+    
+    ' Determines the stock with the greatest yearly change.
+
+    For j = 2 To lastrow2
+        If ws.Cells(j, 11).Value >= GreatestPercent Then
+            GreatestPercent = ws.Cells(j, 11).Value
+            ws.Cells(2, 17).Value = GreatestPercent
+            ws.Cells(2, 16).Value = ws.Cells(j, 9).Value
+        Else
+            ws.Cells(2, 17).Value = GreatestPercent
+    
+        End If
+    Next j
+
+    ' Determines the stock with the least yearly change.
+    
+    For k = 2 To lastrow2
+        If ws.Cells(k, 11).Value <= LeastPercent Then
+            LeastPercent = ws.Cells(k, 11).Value
+            ws.Cells(3, 17).Value = LeastPercent
+            ws.Cells(3, 16).Value = ws.Cells(k, 9).Value
+        Else
+            ws.Cells(3, 17).Value = LeastPercent
+    
+        End If
+    Next k
+
+    ' Determines the stock with the greatest stock volume.
+
+    For m = 2 To lastrow2
+        If ws.Cells(m, 12).Value >= GreatestVolume Then
+            GreatestVolume = ws.Cells(m, 12).Value
+            ws.Cells(4, 17).Value = GreatestVolume
+            ws.Cells(4, 16).Value = ws.Cells(m, 9).Value
+        Else
+            ws.Cells(4, 17).Value = GreatestVolume
+        End If
+    Next m
+    
+    ' From Statology by Zach. Formats column K and cells 2,Q and 3,Q for percentages. New variables declared.
+    
+    Dim per As Integer
+    Dim per2 As Integer
+    
+    For per = 2 To lastrow2
+        ws.Range("K" & per).NumberFormat = "0.00%"
+    Next per
+    
+    For per2 = 2 To 3
+        ws.Range("Q" & per2).NumberFormat = "0.00%"
+    Next per2
+  Next ws
+    
+
+End Sub
